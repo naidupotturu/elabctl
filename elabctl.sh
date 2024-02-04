@@ -6,16 +6,17 @@
 declare -r ELABCTL_VERSION='3.6.0'
 
 # default backup dir
-declare BACKUP_DIR='/var/backups/elabftw'
+declare BACKUP_DIR='/home/potturus/vasu-dev-eln/backup'
 
 # defines the time until older mysql dumps will be deleted (+0 = older than 24h, +1 = older than 48h and so on)
 declare DUMP_DELETE_DAYS=+0
 
 # default config file for docker-compose
-declare CONF_FILE='/etc/elabftw.yml'
-declare TMP_CONF_FILE='/tmp/elabftw.yml'
+declare CONF_FILE='/home/potturus/vasu-dev-eln/docker-compose.yml'
+# declare TMP_CONF_FILE='/tmp/elabftw.yml'
+declare TMP_CONF_FILE='/home/potturus/vasu-dev-eln/tmp/docker-compose.yml'
 # default data directory
-declare DATA_DIR='/var/elabftw'
+declare DATA_DIR='/home/potturus/vasu-dev-eln/data'
 
 # default conf file is no conf file
 declare ELABCTL_CONF_FILE="using default values (no config file found)"
@@ -113,7 +114,7 @@ function get-user-conf
     if [ -f elabctl.conf ]; then
         mv -v elabctl.conf elabctl.conf.old
     fi
-    curl -Ls https://github.com/elabftw/elabctl/raw/master/elabctl.conf -o elabctl.conf
+    curl -Ls https://github.com/naidupotturu/elabctl/raw/vasu-dev-changes/elabctl.conf -o elabctl.conf
     echo "Downloaded elabctl.conf."
     echo "Edit it and move it in ~/.config or /etc."
     echo "Or leave it there and always use elabctl from this directory."
@@ -207,7 +208,7 @@ function install
     # init vars
     # if you don't want any dialog
     declare unattended=${ELAB_UNATTENDED:-0}
-    declare servername=${ELAB_SERVERNAME:-localhost}
+    declare servername=${ELAB_SERVERNAME:-elab.desy.de}
     declare hasdomain=${ELAB_HASDOMAIN:-0}
     declare usehttps=${ELAB_USEHTTPS:-1}
     declare useselfsigned=${ELAB_USESELFSIGNED:-0}
@@ -256,7 +257,7 @@ function install
         dialog --backtitle "$backtitle" --title "$title" --yes-label "Server" --no-label "My computer" --yesno "\nAre you installing it on a Server or a personal computer?" 0 0
         if [ $? -eq 1 ]; then
             # local computer
-            servername="localhost"
+            servername="elab.desy.de"
         else
             # server
 
@@ -321,10 +322,10 @@ function install
 
     # elab config
     echo 50 | dialog --backtitle "$backtitle" --title "$title" --gauge "Adjusting configuration" 20 80
-    sed -i -e "s/SERVER_NAME=localhost/SERVER_NAME=$servername/" $TMP_CONF_FILE
-    sed -i -e "s:/var/elabftw:${DATA_DIR}:" $TMP_CONF_FILE
-    sed -i -e "s/container_name: elabftw/container_name: ${ELAB_WEB_CONTAINER_NAME}/" $TMP_CONF_FILE
-    sed -i -e "s/container_name: mysql/container_name: ${ELAB_MYSQL_CONTAINER_NAME}/" $TMP_CONF_FILE
+    sed -i -e "s/SERVER_NAME=elab.desy.de/SERVER_NAME=$servername/" $TMP_CONF_FILE
+    sed -i -e "s:/home/potturus/vasu-dev-eln/data:${DATA_DIR}:" $TMP_CONF_FILE
+    sed -i -e "s/container_name: elabftw-dev/container_name: ${ELAB_WEB_CONTAINER_NAME}/" $TMP_CONF_FILE
+    sed -i -e "s/container_name: mysql-dev/container_name: ${ELAB_MYSQL_CONTAINER_NAME}/" $TMP_CONF_FILE
 
     # disable https
     scheme="https://"
@@ -441,7 +442,7 @@ function self-update
 {
     me=$(command -v "$0")
     echo "Downloading new version to /tmp/elabctl"
-    curl -sL https://raw.githubusercontent.com/elabftw/elabctl/master/elabctl.sh -o /tmp/elabctl
+    curl -sL https://raw.githubusercontent.com/naidupotturu/elabctl/vasu-dev-changes/elabctl.sh -o /tmp/elabctl
     chmod -v +x /tmp/elabctl
     mv -v /tmp/elabctl "$me"
 }
@@ -589,8 +590,8 @@ esac
 
 # default settings that could be overriden by config
 
-declare ELAB_WEB_CONTAINER_NAME='elabftw'
-declare ELAB_MYSQL_CONTAINER_NAME='mysql'
+declare ELAB_WEB_CONTAINER_NAME='elabftw-dev'
+declare ELAB_MYSQL_CONTAINER_NAME='mysql-dev'
 
 # Now we load the configuration file for custom directories set by user
 if [ -f /etc/elabctl.conf ]; then
